@@ -32,17 +32,13 @@ pipeline {
 
         stage('Deploy to GCP VM') {
             steps {
-                sshagent(['jenkins-ssh-key']) {
-                    sh """
-                    ssh -o StrictHostKeyChecking=no $GCP_USER@$GCP_VM << 'EOF'
-                        docker pull $DOCKER_IMAGE
-                        docker stop my-react-container || true
-                        docker rm my-react-container || true
-                        docker run -d --name my-react-container -p 80:80 $DOCKER_IMAGE
-                    EOF
-                    """
-                }
-            }
+                            sshCommand remote: [host: "$GCP_VM", user: "$GCP_USER", identityFile: '/var/lib/jenkins/.ssh/id_rsa'], command: """
+                                docker pull $DOCKER_IMAGE
+                                docker stop my-react-container || true
+                                docker rm my-react-container || true
+                                docker run -d --name my-react-container -p 80:80 $DOCKER_IMAGE
+                            """
+                        }
         }
     }
 }
